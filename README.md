@@ -81,5 +81,12 @@ O dashboard é composto por quatro páginas temáticas:
 As principais decisões metodológicas estão documentadas em 
 [docs/governanca.md](docs/governanca.md).
 
+## Dashboard Power BI
+
+O arquivo `.pbix` do dashboard está disponível para download no link abaixo.
+É necessário ter o Power BI Desktop instalado para visualizar o arquivo.
+
+[Download do Dashboard — Google Drive](https://drive.google.com/file/d/12M8Tr14zrGE4g-B76VyaFPpuISuVjjqU/view?usp=sharing)
+
 ## Autor
 Gabriel da Silva Brandão Nascimento [RM374018] — Pós-Tech em Data Analytics FIAP 2026.
