@@ -82,4 +82,4 @@ As principais decisões metodológicas estão documentadas em
 [docs/governanca.md](docs/governanca.md).
 
 ## Autor
-Gabriel da Silva Brandão Nascimento — Pós-Tech em Data Analytics FIAP
+Gabriel da Silva Brandão Nascimento — Pós-Tech em Data Analytics FIAP 2026.
