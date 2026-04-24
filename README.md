@@ -14,19 +14,19 @@ Análise de dados do Brazilian E-Commerce Public Dataset by Olist, desenvolvida 
 - **GitHub** — documentação e versionamento do projeto.
 
 ## Estrutura do Repositório
-olist-ecommerce-analysis/
-│
-├── README.md               — Visão geral do projeto
-├── docs/
-│   ├── governanca.md       — Decisões analíticas e critérios de qualidade
-│   └── dicionario_dados.md — Descrição das tabelas e colunas
-├── dax/
-│   ├── metricas_comerciais.md  — Medidas de desempenho comercial
-│   ├── metricas_logistica.md   — Medidas de eficiência logística
-│   ├── metricas_clientes.md    — Medidas de satisfação e retenção
-│   └── metricas_rfm.md         — Segmentação RFM de clientes
-└── dashboard/
-└── olist_dashboard.pbix    — Arquivo do dashboard Power BI
+
+📁 **olist-ecommerce-analysis**
+- 📄 `README.md` — Visão geral do projeto
+- 📁 **docs/**
+  - 📄 `governanca.md` — Decisões analíticas e critérios de qualidade
+  - 📄 `dicionario_dados.md` — Descrição das tabelas e colunas
+- 📁 **dax/**
+  - 📄 `metricas_comerciais.md` — Medidas de desempenho comercial
+  - 📄 `metricas_logistica.md` — Medidas de eficiência logística
+  - 📄 `metricas_clientes.md` — Medidas de satisfação e retenção
+  - 📄 `metricas_rfm.md` — Segmentação RFM de clientes
+- 📁 **dashboard/**
+  - 📄 `olist_dashboard.pbix` — Arquivo do dashboard Power BI
 
 ## Principais Indicadores
 
