@@ -2,20 +2,70 @@
 
 ## Visão Geral
 Medidas DAX utilizadas na página de Análise de Produtos e Categorias.
-As medidas desta página combinam indicadores comerciais e de satisfação
-aplicados ao contexto de categoria de produto.
+Esta página cruza três dimensões por categoria de produto: faturamento,
+satisfação do cliente e custo relativo de frete.
 
 ---
 
-## Medidas Utilizadas Nesta Página
+## GMV Top Categoria
+Retorna o valor de GMV da categoria com maior faturamento.
+Utilizado no KPI card de referência rápida da página.
 
-| Medida | Arquivo de Referência | Descrição |
-|---|---|---|
-| GMV Total | metricas_comerciais.md | Faturamento total filtrado por categoria |
-| GMV Top Categoria | metricas_comerciais.md | Categoria com maior faturamento |
-| Frete % Preço Categoria | metricas_comerciais.md | Custo relativo de frete por categoria |
-| Nota Média Geral | metricas_clientes.md | Satisfação média geral |
-| Nota Média por Categoria | metricas_clientes.md | Satisfação média filtrada por categoria |
+```dax
+GMV_TOP_CATEGORIA = 
+                    MAXX(
+                          ALL(olist_products_dataset[product_category_name]),
+                          [GMV_TOTAL]
+                    )
+```
+
+---
+
+## Nota Média por Categoria
+Média do review score filtrada pelo contexto de categoria de produto.
+Utilizada no visual de satisfação por categoria.
+
+```dax
+NOTA_MEDIA_CATEGORIA = 
+                        AVERAGEX(
+                                 olist_order_reviews_dataset,
+                                 olist_order_reviews_dataset[review_score]
+                        )
+```
+
+---
+
+## Frete % Preço por Categoria
+Percentual do valor do frete em relação ao preço do produto por categoria.
+Exclui itens com preço zero para evitar distorção de média.
+
+```dax
+% FRETE_PRECO_CATEGORIA = 
+                          DIVIDE(
+                                 SUMX(
+                                       FILTER(olist_order_items_dataset, olist_order_items_dataset[price] > 0),
+                                       olist_order_items_dataset[freight_value]
+                                       ),
+                                 SUMX(
+                                       FILTER(olist_order_items_dataset, olist_order_items_dataset[price] > 0),
+                                       olist_order_items_dataset[price]
+                                 ),
+                                 0
+                          )
+```
+
+---
+
+## Frete % GMV (KPI Card)
+Percentual da receita de frete em relação ao GMV total.
+Utilizado no KPI card da página como indicador macro de custo logístico.
+
+```dax
+% FRETE_GMV = DIVIDE([RECEITA_FRETE],
+                     [GMV_TOTAL],
+                      0
+               )
+```
 
 ---
 
@@ -28,18 +78,19 @@ Esta página cruza três dimensões por categoria de produto:
 3. **Custo de frete relativo** — onde o frete é desproporcional ao preço
 
 O cruzamento dessas três dimensões na tabela consolidada permite
-identificar categorias com alto GMV mas baixa satisfação — 
-sinalizando risco — e categorias com frete desproporcional ao preço
-do produto — sinalizando problema estrutural de precificação logística.
+identificar categorias com alto GMV mas baixa satisfação — sinalizando
+risco — e categorias com frete desproporcional ao preço do produto —
+sinalizando problema estrutural de precificação logística.
 
 ---
 
 ## Principais Achados
 
-| Categoria | Situação | Frete % Preço | Nota Média |
+| Categoria | Frete % Preço | Nota Média | Situação |
 |---|---|---|---|
-| Casa Conforto 2 | Crítico — frete alto e nota baixa | 53,97% | 3,6 |
-| Fraldas e Higiene | Atenção — frete alto e nota baixa | 38,92% | 3,7 |
-| Móveis Escritório | Atenção — nota mais baixa da análise | — | 3,6 |
-| CDs, DVDs e Musicais | Destaque — melhor nota da plataforma | — | 4,7 |
-| Saúde e Beleza | Líder em GMV com satisfação acima da média | — | 4,1 |
+| Casa Conforto 2 | 53,97% | 3,6 | Crítico |
+| Fraldas e Higiene | 38,92% | 3,7 | Atenção |
+| Flores | 44,04% | — | Atenção |
+| Móveis Escritório | — | 3,6 | Atenção |
+| CDs, DVDs e Musicais | — | 4,7 | Destaque positivo |
+| Saúde e Beleza | — | 4,1 | Líder em GMV |
