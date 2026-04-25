@@ -10,11 +10,13 @@ Todas as medidas estão armazenadas na tabela `_Medidas` no modelo Power BI.
 Soma do valor de todos os itens vendidos, excluindo frete.
 
 ```dax
-GMV Total =
-SUMX(
-    order_items,
-    order_items[price]
-)
+% GMV_DO_TOTAL = 
+                DIVIDE(
+                        [GMV_TOTAL],
+                        CALCULATE(
+                                    [GMV_TOTAL], ALL(olist_customers_dataset)),
+                                    0
+                )
 ```
 
 ---
@@ -23,11 +25,10 @@ SUMX(
 Soma do valor de frete de todos os itens.
 
 ```dax
-Receita Frete =
-SUMX(
-    order_items,
-    order_items[freight_value]
-)
+RECEITA_FRETE = 
+                SUMX(olist_order_items_dataset,
+                     olist_order_items_dataset[freight_value]
+                )
 ```
 
 ---
@@ -36,8 +37,8 @@ SUMX(
 GMV somado à receita de frete — total movimentado pelo ecossistema.
 
 ```dax
-Receita Total =
-[GMV Total] + [Receita Frete]
+RECEITA_TOTAL = 
+                [GMV_TOTAL] + [RECEITA_FRETE]
 ```
 
 ---
@@ -46,8 +47,8 @@ Receita Total =
 Contagem distinta de pedidos — evita duplicação por múltiplos itens.
 
 ```dax
-Volume Pedidos =
-DISTINCTCOUNT(orders[order_id])
+VOLUME_PEDIDOS = 
+                DISTINCTCOUNT(olist_orders_dataset[order_id])
 ```
 
 ---
@@ -56,8 +57,8 @@ DISTINCTCOUNT(orders[order_id])
 Contagem de clientes reais — usa `customer_unique_id` e não `customer_id`.
 
 ```dax
-Total Clientes =
-DISTINCTCOUNT(customers[customer_unique_id])
+TOTAL_CLIENTES = 
+                DISTINCTCOUNT(olist_customers_dataset[customer_unique_id])
 ```
 
 ---
@@ -66,12 +67,11 @@ DISTINCTCOUNT(customers[customer_unique_id])
 Receita média por pedido.
 
 ```dax
-Ticket Medio =
-DIVIDE(
-    [GMV Total],
-    [Volume Pedidos],
-    0
-)
+TICKET_MEDIO = 
+                DIVIDE([GMV_TOTAL],
+                       [VOLUME_PEDIDOS],
+                       0
+                )
 ```
 
 ---
@@ -80,12 +80,10 @@ DIVIDE(
 Percentual do frete em relação ao GMV — indicador de eficiência logística.
 
 ```dax
-Frete % GMV =
-DIVIDE(
-    [Receita Frete],
-    [GMV Total],
-    0
-)
+% FRETE_GMV = DIVIDE([RECEITA_FRETE],
+                     [GMV_TOTAL],
+                     0
+                )
 ```
 
 ---
@@ -94,11 +92,11 @@ DIVIDE(
 Valor médio de frete por item vendido.
 
 ```dax
-Frete Medio Pedido =
-AVERAGEX(
-    order_items,
-    order_items[freight_value]
-)
+FRETE_MEDIO_PEDIDO = 
+                     AVERAGEX(
+                              olist_order_items_dataset,
+                              olist_order_items_dataset[freight_value]
+                     )
 ```
 
 ---
@@ -107,11 +105,10 @@ AVERAGEX(
 Número médio de parcelas por transação.
 
 ```dax
-Parcelamento Medio =
-AVERAGEX(
-    order_payments,
-    order_payments[payment_installments]
-)
+PARCELAMENTO_MEDIO = 
+                    AVERAGEX(
+                                olist_order_payments_dataset,
+                                olist_order_payments_dataset[payment_installments])
 ```
 
 ---
@@ -120,11 +117,11 @@ AVERAGEX(
 Valor de GMV da categoria com maior faturamento.
 
 ```dax
-GMV Top Categoria =
-MAXX(
-    ALL(products[product_category_name_english]),
-    [GMV Total]
-)
+GMV_TOP_CATEGORIA = 
+                    MAXX(
+                          ALL(olist_products_dataset[product_category_name]),
+                          [GMV_TOTAL]
+                    )
 ```
 
 ---
@@ -134,18 +131,18 @@ Percentual do frete em relação ao preço do produto por categoria.
 Exclui itens com preço zero para evitar distorção.
 
 ```dax
-Frete % Preco Categoria =
-DIVIDE(
-    SUMX(
-        FILTER(order_items, order_items[price] > 0),
-        order_items[freight_value]
-    ),
-    SUMX(
-        FILTER(order_items, order_items[price] > 0),
-        order_items[price]
-    ),
-    0
-)
+% FRETE_PRECO_CATEGORIA = 
+                          DIVIDE(
+                                 SUMX(
+                                       FILTER(olist_order_items_dataset, olist_order_items_dataset[price] > 0),
+                                       olist_order_items_dataset[freight_value]
+                                       ),
+                                 SUMX(
+                                       FILTER(olist_order_items_dataset, olist_order_items_dataset[price] > 0),
+                                       olist_order_items_dataset[price]
+                                 ),
+                                 0
+                          )
 ```
 
 ---
@@ -155,8 +152,10 @@ Versão do GMV que retorna zero em vez de branco para meses sem pedidos.
 Necessária para manter continuidade da linha no gráfico temporal.
 
 ```dax
-GMV Total =
-VAR Resultado = SUMX(order_items, order_items[price])
-RETURN
-IF(ISBLANK(Resultado), 0, Resultado)
+GMV_TOTAL = 
+ CALCULATE(
+        SUMX(
+            olist_order_items_dataset, olist_order_items_dataset[price]),
+            CROSSFILTER(olist_orders_dataset[order_id], olist_order_items_dataset[order_id], Both)
+        )
 ```
