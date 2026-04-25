@@ -9,15 +9,14 @@ Medidas DAX utilizadas na página de Eficiência Operacional e Desempenho de Ven
 Percentual de pedidos entregues até a data estimada.
 
 ```dax
-Entrega no Prazo % =
-VAR EntregasNoPrazo =
-    CALCULATE(
-        COUNTROWS(orders),
-        orders[order_delivered_customer_date] <=
-        orders[order_estimated_delivery_date]
-    )
-RETURN
-DIVIDE(EntregasNoPrazo, [Volume Pedidos], 0)
+ENTREGA_PRAZO % = 
+                  VAR ENTREGAS_NO_PRAZO = 
+                                        CALCULATE(
+                                                    COUNTROWS(olist_orders_dataset),
+                                                    olist_orders_dataset[order_delivered_customer_date] <= olist_orders_dataset[order_estimated_delivery_date]
+                                        )
+                                        RETURN
+                                        DIVIDE(ENTREGAS_NO_PRAZO, [VOLUME_PEDIDOS], 0)
 ```
 
 ---
@@ -26,14 +25,14 @@ DIVIDE(EntregasNoPrazo, [Volume Pedidos], 0)
 Média de dias de atraso considerando apenas pedidos atrasados. Calculada a partir da tabela `order_reviews` para respeitar o contexto de filtro do `review_score`.
 
 ```dax
-Atraso Medio Dias =
+ATRASO_MEDIO_DIAS = 
 VAR TabelaCruzada =
     CALCULATETABLE(
         ADDCOLUMNS(
-            order_reviews,
+            olist_order_reviews_dataset,
             "Atraso",
-            RELATED(orders[order_delivered_customer_date]) -
-            RELATED(orders[order_estimated_delivery_date])
+            RELATED(olist_orders_dataset[order_delivered_customer_date]) -
+            RELATED(olist_orders_dataset[order_estimated_delivery_date])
         )
     )
 VAR SomenteAtrasados =
@@ -54,19 +53,17 @@ AVERAGEX(
 Média de dias entre a compra e a entrega ao cliente. Considera apenas pedidos com status "delivered".
 
 ```dax
-Tempo Entrega Total Dias =
-CALCULATE(
-    AVERAGEX(
-        orders,
-        DATEDIFF(
-            orders[order_purchase_timestamp],
-            orders[order_delivered_customer_date],
-            DAY
-        )
-    ),
-    NOT ISBLANK(orders[order_delivered_customer_date]),
-    orders[order_status] = "delivered"
-)
+TEMPO_ENTREGA_TOTAL_DIAS = 
+                            CALCULATE(
+                                        AVERAGEX(
+                                                olist_orders_dataset,
+                                                DATEDIFF(olist_orders_dataset[order_purchase_timestamp],
+                                                         olist_orders_dataset[order_delivered_customer_date],
+                                                         DAY)
+                                        ),
+                                        NOT ISBLANK(olist_orders_dataset[order_delivered_customer_date]),
+                                        olist_orders_dataset[order_status] = "delivered"
+                            )
 ```
 
 ---
@@ -75,18 +72,17 @@ CALCULATE(
 Média de dias entre a compra e a aprovação do pagamento. Responsabilidade da plataforma.
 
 ```dax
-Tempo Aprovacao Dias =
-AVERAGEX(
-    FILTER(
-        orders,
-        NOT ISBLANK(orders[order_approved_at])
-    ),
-    DATEDIFF(
-        orders[order_purchase_timestamp],
-        orders[order_approved_at],
-        DAY
-    )
-)
+TEMPO_APROVACAO_DIAS = 
+                        AVERAGEX(
+                                    FILTER(
+                                            olist_orders_dataset,
+                                            NOT ISBLANK(olist_orders_dataset[order_approved_at])
+                                    ),
+                                    DATEDIFF(
+                                             olist_orders_dataset[order_purchase_timestamp],
+                                             olist_orders_dataset[order_approved_at],
+                                             DAY)
+                        )
 ```
 
 ---
@@ -95,19 +91,19 @@ AVERAGEX(
 Média de dias entre a aprovação e a entrega à transportadora. Responsabilidade do vendedor.
 
 ```dax
-Tempo Postagem Dias =
-AVERAGEX(
-    FILTER(
-        orders,
-        NOT ISBLANK(orders[order_delivered_carrier_date])
-            && NOT ISBLANK(orders[order_approved_at])
-    ),
-    DATEDIFF(
-        orders[order_approved_at],
-        orders[order_delivered_carrier_date],
-        DAY
-    )
-)
+TEMPO_POSTAGEM_DIAS = 
+                        AVERAGEX(
+                                 FILTER(
+                                        olist_orders_dataset,
+                                        NOT ISBLANK(olist_orders_dataset[order_delivered_carrier_date])
+                                                    && NOT ISBLANK(olist_orders_dataset[order_approved_at])
+                                 ),
+                                 DATEDIFF(
+                                            olist_orders_dataset[order_approved_at],
+                                            olist_orders_dataset[order_delivered_carrier_date],
+                                            DAY
+                                 )
+                        )
 ```
 
 ---
@@ -116,38 +112,19 @@ AVERAGEX(
 Média de dias entre a coleta pela transportadora e a entrega ao cliente. Responsabilidade da transportadora.
 
 ```dax
-Tempo Transito Dias =
-AVERAGEX(
-    FILTER(
-        orders,
-        NOT ISBLANK(orders[order_delivered_customer_date])
-            && NOT ISBLANK(orders[order_delivered_carrier_date])
-    ),
-    DATEDIFF(
-        orders[order_delivered_carrier_date],
-        orders[order_delivered_customer_date],
-        DAY
-    )
-)
-```
-
----
-
-## Tabela de Decomposição do SLA
-Tabela calculada utilizada no visual de decomposição do tempo de entrega por etapa e responsável.
-
-```dax
-Decomposicao_SLA =
-DATATABLE(
-    "Etapa", STRING,
-    "Responsavel", STRING,
-    "Ordem", INTEGER,
-    {
-        { "Aprovação", "Plataforma", 1 },
-        { "Postagem", "Vendedor", 2 },
-        { "Trânsito", "Transportadora", 3 }
-    }
-)
+TEMPO_TRANSITO_DIAS = 
+                        AVERAGEX(
+                                 FILTER(
+                                        olist_orders_dataset,
+                                        NOT ISBLANK(olist_orders_dataset[order_delivered_customer_date])
+                                                    && NOT ISBLANK(olist_orders_dataset[order_delivered_carrier_date])
+                                 ),
+                                 DATEDIFF(
+                                          olist_orders_dataset[order_delivered_carrier_date],
+                                          olist_orders_dataset[order_delivered_customer_date],
+                                          DAY
+                                 )
+                        )
 ```
 
 ---
@@ -156,11 +133,11 @@ DATATABLE(
 Medida dinâmica que retorna o valor correto para cada etapa da decomposição do SLA conforme o contexto de filtro.
 
 ```dax
-Tempo Etapa SLA =
-SWITCH(
-    SELECTEDVALUE(Decomposicao_SLA[Etapa]),
-    "Aprovação", [Tempo Aprovacao Dias],
-    "Postagem",  [Tempo Postagem Dias],
-    "Trânsito",  [Tempo Transito Dias]
-)
+TEMPO_ETAPA_SLA = 
+                SWITCH(
+                        SELECTEDVALUE(decomposicao_SLA[Etapa]),
+                                      "Aprovação", [TEMPO_APROVACAO_DIAS],
+                                      "Postagem", [TEMPO_POSTAGEM_DIAS],
+                                      "Trânsito", [TEMPO_TRANSITO_DIAS]
+                        )
 ```
