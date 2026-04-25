@@ -6,8 +6,8 @@ Análise de dados do Brazilian E-Commerce Public Dataset by Olist, desenvolvida 
 ## Dataset
 - **Fonte:** Brazilian E-Commerce Public Dataset by Olist (Kaggle);
 - **Período analisado:** Janeiro de 2017 a Agosto de 2018;
-- **Volume:** ~99 mil pedidos, 96 mil clientes únicos, 3.068 vendedores ativos;
-- **Tabelas utilizadas:** orders, order_items, order_payments, order_reviews, customers, sellers, products, geolocation, category_name_translation.
+- **Volume:** 99 mil pedidos, 96 mil clientes únicos, 3.068 vendedores ativos;
+- **Tabelas utilizadas:** olist_orders_dataset, olist_order_items_dataset, olist_order_payments_dataset, olist_order_reviews_dataset, olist_customers_dataset, olist_sellers_dataset, olist_products_dataset,    olist_geolocation_dataset, product_category_name_translation.
 
 ## Ferramentas Utilizadas
 - **Power BI** — modelagem de dados, medidas DAX e dashboard executivo;
