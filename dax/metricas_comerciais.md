@@ -10,13 +10,12 @@ Todas as medidas estão armazenadas na tabela `_Medidas` no modelo Power BI.
 Soma do valor de todos os itens vendidos, excluindo frete.
 
 ```dax
-% GMV_DO_TOTAL = 
-                DIVIDE(
-                        [GMV_TOTAL],
-                        CALCULATE(
-                                    [GMV_TOTAL], ALL(olist_customers_dataset)),
-                                    0
-                )
+GMV_TOTAL = 
+ CALCULATE(
+        SUMX(
+            olist_order_items_dataset, olist_order_items_dataset[price]),
+            CROSSFILTER(olist_orders_dataset[order_id], olist_order_items_dataset[order_id], Both)
+        )
 ```
 
 ---
@@ -145,17 +144,4 @@ Exclui itens com preço zero para evitar distorção.
                           )
 ```
 
----
-
-## GMV com Tratamento de Branco
-Versão do GMV que retorna zero em vez de branco para meses sem pedidos.
-Necessária para manter continuidade da linha no gráfico temporal.
-
-```dax
-GMV_TOTAL = 
- CALCULATE(
-        SUMX(
-            olist_order_items_dataset, olist_order_items_dataset[price]),
-            CROSSFILTER(olist_orders_dataset[order_id], olist_order_items_dataset[order_id], Both)
-        )
 ```
