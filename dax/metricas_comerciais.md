@@ -142,6 +142,3 @@ Exclui itens com preço zero para evitar distorção.
                                  ),
                                  0
                           )
-```
-
-```
