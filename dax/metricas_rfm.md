@@ -22,25 +22,25 @@ define o segmento de cada cliente.
 Tabela calculada que consolida os dados brutos de cada cliente. Data de referência: 31/08/2018 (último dia do período analisado).
 
 ```dax
-RFM_Base =
-ADDCOLUMNS(
-    SUMMARIZE(
-        orders,
-        customers[customer_unique_id],
-        "UltimaCompra",
-            MAX(orders[order_purchase_timestamp]),
-        "Frequencia",
-            CALCULATE(DISTINCTCOUNT(orders[order_id])),
-        "Monetizacao",
-            CALCULATE(SUMX(order_items, order_items[price]))
-    ),
-    "Recencia",
-        DATEDIFF(
-            [UltimaCompra],
-            DATE(2018, 8, 31),
-            DAY
-        )
-)
+RFM_Base = 
+           ADDCOLUMNS(
+                      SUMMARIZE(
+                                olist_orders_dataset,
+                                olist_customers_dataset[customer_unique_id],
+                                "ULTIMA_COMPRA",
+                                       MAX(olist_orders_dataset[order_purchase_timestamp]),
+                                "FREQUENCIA",
+                                       CALCULATE(DISTINCTCOUNT(olist_orders_dataset[order_id])),
+                                "MONETIZACAO",
+                                       CALCULATE(SUMX(olist_order_items_dataset, olist_order_items_dataset[price]))
+                      ),
+                      "RECENCIA",
+                                DATEDIFF(
+                                          [ULTIMA_COMPRA],
+                                          DATE(2018, 8, 31),
+                                          DAY
+                                )
+           )
 ```
 
 ---
@@ -49,37 +49,37 @@ ADDCOLUMNS(
 Tabela calculada que converte os valores brutos em scores de 1 a 5 e classifica cada cliente no segmento correspondente.
 
 ```dax
-RFM_Scores =
-ADDCOLUMNS(
-    RFM_Base,
-    "Score_R",
-        SWITCH(
-            TRUE(),
-            [Recencia] <= 90,  5,
-            [Recencia] <= 180, 4,
-            [Recencia] <= 270, 3,
-            [Recencia] <= 365, 2,
-            1
-        ),
-    "Score_F",
-        SWITCH(
-            TRUE(),
-            [Frequencia] >= 5, 5,
-            [Frequencia] = 4,  4,
-            [Frequencia] = 3,  3,
-            [Frequencia] = 2,  2,
-            1
-        ),
-    "Score_M",
-        SWITCH(
-            TRUE(),
-            [Monetizacao] >= 1000, 5,
-            [Monetizacao] >= 500,  4,
-            [Monetizacao] >= 200,  3,
-            [Monetizacao] >= 100,  2,
-            1
-        )
-)
+RFM_Scores = 
+             ADDCOLUMNS(
+                        RFM_Base,
+                        "SCORE_R",
+                                  SWITCH(
+                                         TRUE(),
+                                         RFM_Base[RECENCIA] <= 90, 5,
+                                         RFM_Base[RECENCIA] <= 180, 4,
+                                         RFM_Base[RECENCIA] <= 270, 3,
+                                         RFM_Base[RECENCIA] <= 365, 2,
+                                         1
+                                  ),
+                        "SCORE_F",
+                                  SWITCH(
+                                         TRUE(),
+                                         RFM_Base[FREQUENCIA] >= 5, 5,
+                                         RFM_Base[FREQUENCIA] = 4,  4,
+                                         RFM_Base[FREQUENCIA] = 3,  3,
+                                         RFM_Base[FREQUENCIA] = 2,  2,
+                                         1
+                                  ),
+                        "SCORE_M",
+                                  SWITCH(
+                                         TRUE(),
+                                         RFM_Base[MONETIZACAO] >= 1000, 5,
+                                         RFM_Base[MONETIZACAO] >= 500,  4,
+                                         RFM_Base[MONETIZACAO] >= 200,  3,
+                                         RFM_Base[MONETIZACAO] >= 100,  2,
+                                         1
+                                   )
+             )
 ```
 
 ---
@@ -88,21 +88,22 @@ ADDCOLUMNS(
 Coluna calculada adicionada à tabela `RFM_Scores` que classifica cada cliente em um segmento comportamental.
 
 ```dax
-Segmento_Refinado =
-VAR R = [Score_R]
-VAR F = [Score_F]
-VAR M = [Score_M]
+SEGMENTO_REFINADO = 
+           VAR R = [SCORE_R]
+           VAR F = [SCORE_F]
+           VAR M = [SCORE_M]
+           VAR RFM_Score = R * 100 + F * 10 + M
 RETURN
-SWITCH(
-    TRUE(),
-    R >= 4 && F >= 4 && M >= 4, "Campeões",
-    R >= 3 && F >= 3 && M >= 3, "Clientes Fiéis",
-    R <= 2 && F >= 2,            "Em Risco",
-    R >= 4 && F = 1,             "Novos Clientes",
-    R >= 3 && F = 1,             "Potencial",
-    R <= 2 && F = 1 && M <= 2,  "Hibernando",
-    "Perdidos"
-)
+        SWITCH(
+                TRUE(),
+                R >= 4 && F >= 4 && M >= 4, "Campeões",
+                R >= 3 && F >= 3 && M >= 3, "Clientes Fiéis",
+                R <= 2 && F >= 2,           "Em Risco",
+                R >= 4 && F = 1,            "Novos Clientes",
+                R >= 3 && F = 1,            "Potencial",
+                R <= 2 && F = 1 && M <= 2,  "Hibernando",
+                "Perdidos"
+            )
 ```
 
 ---
